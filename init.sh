@@ -31,11 +31,14 @@ echo "✅ [IDENTIFIER] replaced by $project_identifier"
 
 # Building a dbtest
 chmod +x dbtest/build.sh
-cd dbtest
-build.sh
-cd ..
+./dbtest/build.sh
 
-echo "✅ Dbtest initialised"
+if [ $? -eq 0 ]; then
+    echo "✅ Dbtest initialised"
+else
+    echo "❌ An error has occurred"
+    exit 1
+fi
 
 # Setting up Git
 git init
@@ -45,4 +48,9 @@ echo "✅ Git initialised"
 # Project installation
 make install
 
-echo "✅ Project installed"
+if [ $? -eq 0 ]; then
+    echo "✅ Project installed"
+else
+    echo "❌ An error has occurred"
+    exit 1
+fi
