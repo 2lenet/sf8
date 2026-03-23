@@ -4,6 +4,8 @@ services:
 
     symfony:
         build: .
+        entrypoint: "/entrypoint_dev.sh"
+        command: "frankenphp run --config /etc/caddy/Caddyfile"
         working_dir: /app
         ports:
             - "8[IDENTIFIER]:80"
