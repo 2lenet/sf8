@@ -54,3 +54,5 @@ else
     echo "❌ An error has occurred"
     exit 1
 fi
+
+rm init.sh
