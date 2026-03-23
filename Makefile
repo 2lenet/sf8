@@ -13,10 +13,10 @@ init:
 # Install project
 install:
 	docker compose build
-	docker compose run symfony composer install
-	docker compose run symfony npm install
-	docker compose run symfony npm run build
-	docker compose run symfony chmod -R 777 var
+	docker compose run --entrypoint "/bin/sh -c" symfony "chmod -R 777 var translations"
+	docker compose run --entrypoint "/bin/sh -c" symfony "composer install"
+	docker compose run --entrypoint "/bin/sh -c" symfony "npm install"
+	docker compose run --entrypoint "/bin/sh -c" symfony "npm run build"
 
 # Start project
 start:
