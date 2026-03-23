@@ -45,11 +45,14 @@ replace_dbtest_service() {
 }
 
 add_or_replace_env_variable() {
-    if grep -Eq "^[#[:space:]]*$1=" .env; then
-      sed -i "s|^[#[:space:]]*$1=.*|$1=${$2}|" .env
+    local key="$1"
+    local value="$2"
+
+    if grep -Eq "^[#[:space:]]*$key=" .env; then
+      sed -i "s|^[#[:space:]]*$key=.*|$key=$value|" .env
     else
       [ -s .env ] && [ -n "$(tail -c1 .env)" ] && echo >> .env
-      echo "$1=${$2}" >> .env
+      echo "$key=$value" >> .env
     fi
 }
 
@@ -125,7 +128,7 @@ cp init-config/monolog.yaml config/packages/monolog.yaml
 sed -i "s|\[PROJECT\]|$project_uppercase|g" config/packages/monolog.yaml
 
 url=smtp://smtp:1025
-add_or_replace_env_variable MAILER_DSN url
+add_or_replace_env_variable MAILER_DSN "$url"
 
 sed -i "/^parameters:/a\    locales: ['fr']" config/services.yaml
 
@@ -154,7 +157,7 @@ if [ -z "$sentry_dsn" ]; then
     exit 1
 fi
 
-add_or_replace_env_variable SENTRY_DSN sentry_dsn
+add_or_replace_env_variable SENTRY_DSN "$sentry_dsn"
 
 rm init-config/sentry.yaml
 
@@ -169,7 +172,7 @@ if [ -z "$loco_dsn" ]; then
     exit 1
 fi
 
-add_or_replace_env_variable LOCO_DSN loco_dsn
+add_or_replace_env_variable LOCO_DSN "$loco_dsn"
 
 rm init-config/translation.yaml
 
