@@ -44,18 +44,6 @@ replace_dbtest_service() {
     mv "$output" "$input"
 }
 
-add_or_replace_env_variable() {
-    local key="$1"
-    local value="$2"
-
-    if grep -Eq "^[#[:space:]]*$key=" .env; then
-      sed -i "s|^[#[:space:]]*$key=.*|$key=$value|" .env
-    else
-      [ -s .env ] && [ -n "$(tail -c1 .env)" ] && echo >> .env
-      echo "$key=$value" >> .env
-    fi
-}
-
 # Replace [PROJECT] with the project name (current folder)
 sed -i "s|\[PROJECT\]|$project|g" docker-compose.yml
 sed -i "s|\[PROJECT\]|$project_capitalized|g" Dockerfile
@@ -128,7 +116,12 @@ cp init-config/monolog.yaml config/packages/monolog.yaml
 sed -i "s|\[PROJECT\]|$project_uppercase|g" config/packages/monolog.yaml
 
 url=smtp://smtp:1025
-add_or_replace_env_variable MAILER_DSN "$url"
+if grep -Eq "^[#[:space:]]*MAILER_DSN=" .env; then
+  sed -i "s|^[#[:space:]]*MAILER_DSN=.*|MAILER_DSN=${url}|" .env
+else
+  [ -s .env ] && [ -n "$(tail -c1 .env)" ] && echo >> .env
+  echo "MAILER_DSN=${url}" >> .env
+fi
 
 sed -i "/^parameters:/a\    locales: ['fr']" config/services.yaml
 
@@ -159,7 +152,12 @@ if [ -z "$sentry_dsn" ]; then
     exit 1
 fi
 
-add_or_replace_env_variable SENTRY_DSN "$sentry_dsn"
+if grep -Eq "^[#[:space:]]*SENTRY_DSN=" .env; then
+  sed -i "s|^[#[:space:]]*SENTRY_DSN=.*|SENTRY_DSN=${sentry_dsn}|" .env
+else
+  [ -s .env ] && [ -n "$(tail -c1 .env)" ] && echo >> .env
+  echo "SENTRY_DSN=${sentry_dsn}" >> .env
+fi
 
 rm init-config/sentry.yaml
 
@@ -174,7 +172,12 @@ if [ -z "$loco_dsn" ]; then
     exit 1
 fi
 
-add_or_replace_env_variable LOCO_DSN "$loco_dsn"
+if grep -Eq "^[#[:space:]]*LOCO_DSN=" .env; then
+  sed -i "s|^[#[:space:]]*LOCO_DSN=.*|LOCO_DSN=loco://${loco_dsn}@default|" .env
+else
+  [ -s .env ] && [ -n "$(tail -c1 .env)" ] && echo >> .env
+  echo "LOCO_DSN=loco://${loco_dsn}@default" >> .env
+fi
 
 rm init-config/translation.yaml
 
