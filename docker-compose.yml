@@ -1,6 +1,10 @@
 services:
     dbtest:
-        image: registry.2le.net/2le/[PROJECT]:dbtest
+        #image: registry.2le.net/2le/[PROJECT]:dbtest
+        image: mariadb:lts
+        environment:
+            MARIADB_ROOT_PASSWORD: pass
+            MARIADB_DATABASE: [PROJECT]
 
     symfony:
         build: .
