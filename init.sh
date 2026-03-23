@@ -2,7 +2,6 @@
 
 project=$(basename "$(pwd)")
 project_capitalized="${project^}"
-#project_upper="${project^^}"
 
 check() {
     if [ $? -eq 0 ]; then
@@ -11,6 +10,37 @@ check() {
         echo "❌ An error has occurred"
         exit 1
     fi
+}
+
+replace_dbtest_service() {
+    input="docker-compose.yml"
+    output="docker-compose.tmp"
+
+    in_dbtest=0
+    dbtest_indent=""
+
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^([[:space:]]*)dbtest: ]]; then
+            dbtest_indent="${BASH_REMATCH[1]}"
+            echo "${dbtest_indent}dbtest:" >> "$output"
+            echo "${dbtest_indent}    image: registry.2le.net/2le/$project:dbtest" >> "$output"
+            in_dbtest=1
+            continue
+        fi
+
+        if [ $in_dbtest -eq 1 ]; then
+            if [[ "$line" =~ ^[[:space:]]+$ ]] || [[ "$line" =~ ^${dbtest_indent}[[:space:]]+ ]]; then
+                continue
+            else
+                in_dbtest=0
+            fi
+        fi
+
+        echo "$line" >> "$output"
+
+    done < "$input"
+
+    mv "$output" "$input"
 }
 
 # Replace [PROJECT] with the project name (current folder)
@@ -37,12 +67,6 @@ sed -i "s|\[IDENTIFIER\]|$project_identifier|g" Makefile
 sed -i "s|\[IDENTIFIER\]|$project_identifier|g" docker-compose.yml
 
 echo "✅ [IDENTIFIER] replaced by $project_identifier"
-
-# Building a dbtest
-chmod +x dbtest/build.sh
-./dbtest/build.sh
-
-check "Dbtest initialised"
 
 # Setting up Git
 git init
@@ -75,38 +99,17 @@ check "Database exported"
 
 rm dbtest/db.sql.gz
 gzip dbtest/db.sql
+chmod +x dbtest/build.sh
 ./dbtest/build.sh
 
 check "Dbtest builded"
 
-# Replace dbtest image in gitlab-ci.yml
-awk '
-/^[[:space:]]*dbtest:/ {
-    print
-    in_dbtest=1
-    next
-}
+# Replace current dbtest service in docker-compose.yml
+replace_dbtest_service
 
-in_dbtest && /^[[:space:]]*#image:/ {
-    sub(/#/, "")
-    print
-    in_dbtest=0
-    skip=1
-    next
-}
+check "Service dbtest updated in docker-compose.yml"
 
-skip && /^[[:space:]]+[a-zA-Z0-9_-]+:/ {
-    skip=0
-}
-
-!skip {
-    print
-}
-' gitlab-ci.yml
-
-check "Service dbtest updated in gitlab-ci.yml"
-
-# Restart project to update dbtest
+# Restart project to update dbtest container
 make start
 
 check "Project restarted"
