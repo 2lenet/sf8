@@ -21,7 +21,7 @@ install:
 # Start project
 start:
 	git config core.hooksPath .githooks
-	docker compose up -d
+	docker compose up -d --remove-orphans
 	@echo "Sf at http://127.0.0.1:8[IDENTIFIER]/"
 	@echo "PMA at http://127.0.0.1:9[IDENTIFIER]/"
 
