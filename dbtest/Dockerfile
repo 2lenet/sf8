@@ -14,7 +14,7 @@ COPY db.sql.gz /docker-entrypoint-initdb.d/db.sql.gz
 # https://docs.docker.com/engine/reference/builder/#volume :
 #       Changing the volume from within the Dockerfile: If any build steps change the data within the volume after
 #       it has been declared, those changes will be discarded.
-RUN ["/usr/local/bin/docker-entrypoint.sh", "mysqld", "--datadir", "/initialized-db"]
+RUN ["/usr/local/bin/docker-entrypoint.sh", "mariadbd", "--datadir", "/initialized-db"]
 
 FROM mariadb:lts
 
@@ -26,4 +26,4 @@ COPY --from=builder /initialized-db /var/lib/mysql2
 COPY mysqld.cnf /etc/mysql/mariadb.conf.d/
 RUN chmod -R 644 /etc/mysql/mariadb.conf.d/mysqld.cnf
 
-CMD ["mysqld"]
+CMD ["mariadbd"]
