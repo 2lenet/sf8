@@ -9,7 +9,7 @@ composer create-project 2lenet/sf8 project_name --no-scripts
 
 or with docker :
 ```bash
-docker run -it -v $PWD:/var/www/html registry.2le.net/2le/2le:base-sf8 composer create-project 2lenet/sf8 project_name --no-scripts
+docker run -it -v $PWD:/app registry.2le.net/2le/2le:base-sf8 composer create-project 2lenet/sf8 project_name --no-scripts
 ```
 
 Say Yes to all recipes question exept Doctrine
