@@ -14,7 +14,7 @@ init:
 install:
 	docker compose build
 	docker compose run --entrypoint "/bin/sh -c" symfony "chmod -R 777 var translations"
-	docker compose run --entrypoint "/bin/sh -c" symfony "composer install"
+	docker compose run --entrypoint "/bin/sh -c" symfony "composer install --no-scripts"
 	docker compose run --entrypoint "/bin/sh -c" symfony "npm install"
 	docker compose run --entrypoint "/bin/sh -c" symfony "npm run build"
 
