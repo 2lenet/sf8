@@ -143,6 +143,8 @@ if [[ "$reponse" == "y" ]]; then
     mkdir -p src/EventListener
     mv init-config/AutoAddMissingTranslations.php src/EventListener/
 
+    sed -i '/autoconfigure: true/ a\        bind:\n            $locoDsn: '\''%env(LOCO_DSN)%'\'' ' config/services.yaml
+
     echo "✅ AutoAddMissingTranslations listener added"
 else
     rm init-config/AutoAddMissingTranslations.php
