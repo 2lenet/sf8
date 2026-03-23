@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+function __run() #(step, name, cmd)
+{
+    local color output exitcode
+
+    printf "[%s] %-20s" "$1" "$2"
+    output=$(eval "$3" 2>&1)
+    exitcode=$?
+
+    if [[ (0 == $exitcode || 130 == $exitcode) ]]; then
+        echo -e "OK!"
+    else
+        echo -e "Not OK!\n\n$output"
+        exit 1
+    fi
+}
+
+__run "1/5" "php-lint" "docker compose exec symfony php -l src/"
+__run "2/5" "phpcbf" "docker compose exec symfony vendor/bin/phpcbf src/"
+__run "3/5" "phpcs" "docker compose exec symfony vendor/bin/phpcs src/"
+__run "4/5" "phpstan" "docker compose exec symfony vendor/bin/phpstan analyse"
+__run "5/5" "doctrine" "docker compose exec symfony bin/console doctrine:schema:validate"

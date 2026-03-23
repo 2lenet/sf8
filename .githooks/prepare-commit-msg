@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+MAINBRANCH=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+if [[ "$BRANCH" == "$MAINBRANCH" ]]; then
+    echo -e "This branch is ignored!";
+    exit 0;
+fi
+
+NBCOMMIT=$(git cherry $MAINBRANCH -v | head -n 1 | wc -l)
+MESSAGE=$(cat $1)
+COMMITFORMAT="#([0-9]+)"
+if [[ $NBCOMMIT == 0 ]]; then
+    if ! [[ "$MESSAGE" =~ $COMMITFORMAT ]]; then
+        echo -e "Not OK! Your commit message needs to contain a ticket id (#123)!";
+        exit 1;
+    else
+        echo -e "Your commit message respects the format!";
+        exit 0;
+    fi
+else
+    echo -e "Not your first commit!";
+    exit 0;
+fi

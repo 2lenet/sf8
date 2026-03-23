@@ -1,0 +1,103 @@
+stages:
+    - test
+    - analysis
+    - build
+    - deploy
+
+variables:
+    DOCKER_BUILDKIT: '1'
+    MYSQL_DATABASE: [PROJECT]
+    MYSQL_ROOT_PASSWORD: pass
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+include:
+    - project: '2le/devops'
+      ref: master # Git branch
+      file: '/gitlab-ci/symfony-check.yml'
+
+unittest:
+    image: registry.2le.net/2le/2le:base-sf8-xdebug
+    stage: test
+    services:
+        - name: registry.2le.net/2le/[PROJECT]:dbtest
+          alias: dbtest
+    script:
+        - composer install
+        - npm install
+        - npm run build
+        - make test
+    artifacts:
+        reports:
+            coverage_report:
+                coverage_format: cobertura
+                path: coverage-cobertura.xml
+        paths:
+            - phpunit-coverage.xml
+            - phpunit-report.xml
+            - coverage-cobertura.xml
+    only:
+        - main
+        - merge_requests
+        - devops
+
+sonarqube:
+    stage: analysis
+    image: sonarsource/sonar-scanner-cli
+    variables:
+        SONAR_URL: https://sonar.2le.net
+        SONAR_ANALYSIS_MODE: publish
+    script:
+        - sonar-scanner
+    only:
+        - main
+        - merge_requests
+        - devops
+
+hal:
+    image: registry.2le.net/2le/2le:base-sf8
+    stage: build
+    only:
+        - tags
+    script:
+        - curl --location --request POST "https://hal.2le-test.me/api/upload/composer/[PROJECT]" --form composerJson=@composer.json --form composerLock=@composer.lock
+        - curl --location --request POST "https://hal.2le-test.me/api/upload/package/[PROJECT]" --header "Content-Type:application/json" --data-binary @package.json
+        - curl --location --request POST "https://hal.2le-test.me/api/upload/phpstan/[PROJECT]" --data-binary @phpstan.neon
+
+build-main:
+    stage: build
+    image: registry.2le.net/2le/2le:base-build
+    script:
+        - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+        - make build
+    only:
+        - main
+
+deploy-main:
+    image: registry.2le.net/2le/2le:base-deploy
+    stage: deploy
+    variables:
+        GIT_STRATEGY: none
+    only:
+        - main
+    script:
+        - ssh -o StrictHostKeyChecking=no root@cluster.2le.net "cd /data/docker/[PROJECT]-test/; up-stack $CI_REGISTRY_IMAGE:latest symfony "
+
+build-tags:
+    stage: build
+    image: registry.2le.net/2le/2le:base-build
+    script:
+        - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+        - docker build -t $IMAGE_TAG --build-arg app_version=$CI_COMMIT_TAG .
+        - docker push $IMAGE_TAG
+    only:
+        - tags
+
+deploy-tags:
+    image: registry.2le.net/2le/2le:base-deploy
+    stage: deploy
+    variables:
+        GIT_STRATEGY: none
+    only:
+        - tags
+    script:
+        - ssh -o StrictHostKeyChecking=no root@cluster.2le.net "cd /data/docker/[PROJECT]/; up-stack $IMAGE_TAG symfony "
