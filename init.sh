@@ -44,39 +44,39 @@ replace_dbtest_service() {
 }
 
 # Replace [PROJECT] with the project name (current folder)
-sed -i "s|\[PROJECT\]|$project|g" docker-compose.yml
-sed -i "s|\[PROJECT\]|$project_capitalized|g" Dockerfile
-sed -i "s|\[PROJECT\]|$project|g" Makefile
-sed -i "s|\[PROJECT\]|$project|g" sonar-project.properties
-sed -i "s|\[PROJECT\]|$project|g" .env
-sed -i "s|\[PROJECT\]|$project|g" .gitlab-ci.yml
-sed -i "s|\[PROJECT\]|$project|g" dbtest/build.sh
-sed -i "s|\[PROJECT\]|$project|g" dbtest/Dockerfile
-
-echo "✅ [PROJECT] replaced by $project"
-
-# Replace [IDENTIFIER] with the project ID
-read -p "What is the project ID? " project_identifier
-
-if [ -z "$project_identifier" ]; then
-    echo "❌ You must enter the project ID."
-    exit 1
-fi
-
-sed -i "s|\[IDENTIFIER\]|$project_identifier|g" Makefile
-sed -i "s|\[IDENTIFIER\]|$project_identifier|g" docker-compose.yml
-
-echo "✅ [IDENTIFIER] replaced by $project_identifier"
-
-# Setting up Git
-git init
-
-echo "✅ Git initialised"
-
-# Project installation
-make install
-
-check "Project installed"
+#sed -i "s|\[PROJECT\]|$project|g" docker-compose.yml
+#sed -i "s|\[PROJECT\]|$project_capitalized|g" Dockerfile
+#sed -i "s|\[PROJECT\]|$project|g" Makefile
+#sed -i "s|\[PROJECT\]|$project|g" sonar-project.properties
+#sed -i "s|\[PROJECT\]|$project|g" .env
+#sed -i "s|\[PROJECT\]|$project|g" .gitlab-ci.yml
+#sed -i "s|\[PROJECT\]|$project|g" dbtest/build.sh
+#sed -i "s|\[PROJECT\]|$project|g" dbtest/Dockerfile
+#
+#echo "✅ [PROJECT] replaced by $project"
+#
+## Replace [IDENTIFIER] with the project ID
+#read -p "What is the project ID? " project_identifier
+#
+#if [ -z "$project_identifier" ]; then
+#    echo "❌ You must enter the project ID."
+#    exit 1
+#fi
+#
+#sed -i "s|\[IDENTIFIER\]|$project_identifier|g" Makefile
+#sed -i "s|\[IDENTIFIER\]|$project_identifier|g" docker-compose.yml
+#
+#echo "✅ [IDENTIFIER] replaced by $project_identifier"
+#
+## Setting up Git
+#git init
+#
+#echo "✅ Git initialised"
+#
+## Project installation
+#make install
+#
+#check "Project installed"
 
 # Start the project
 make start
@@ -100,7 +100,8 @@ check "Database exported"
 rm dbtest/db.sql.gz
 gzip dbtest/db.sql
 chmod +x dbtest/build.sh
-./dbtest/build.sh
+cd dbtest; ./build.sh
+cd ..
 
 check "Dbtest builded"
 
