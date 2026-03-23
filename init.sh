@@ -2,6 +2,7 @@
 
 project=$(basename "$(pwd)")
 project_capitalized="${project^}"
+project_uppercase="${project^^}"
 
 check() {
     if [ $? -eq 0 ]; then
@@ -43,6 +44,15 @@ replace_dbtest_service() {
     mv "$output" "$input"
 }
 
+add_or_replace_env_variable() {
+    if grep -Eq "^[#[:space:]]*$1=" .env; then
+      sed -i "s|^[#[:space:]]*$1=.*|$1=${$2}|" .env
+    else
+      [ -s .env ] && [ -n "$(tail -c1 .env)" ] && echo >> .env
+      echo "$1=${$2}" >> .env
+    fi
+}
+
 # Replace [PROJECT] with the project name (current folder)
 sed -i "s|\[PROJECT\]|$project|g" docker-compose.yml
 sed -i "s|\[PROJECT\]|$project_capitalized|g" Dockerfile
@@ -71,7 +81,7 @@ echo "✅ [IDENTIFIER] replaced by $project_identifier"
 # Setting up Git
 git init
 
-echo "✅ Git initialised"
+echo "✅ Git initialized"
 
 # Project installation
 make install
@@ -109,6 +119,61 @@ check "Dbtest builded"
 replace_dbtest_service
 
 check "Service dbtest updated in docker-compose.yml"
+
+# Configure Monolog
+cp init-config/monolog.yaml config/packages/monolog.yaml
+sed -i "s|\[PROJECT\]|$project_uppercase|g" config/packages/monolog.yaml
+
+url=smtp://smtp:1025
+add_or_replace_env_variable MAILER_DSN url
+
+sed -i "/^parameters:/a\    locales: ['fr']" config/services.yaml
+
+rm init-config/monolog.yaml
+
+echo "✅ Monolog configured"
+
+# Add AutoAddMissingTranslations listener
+read -p "Do you want to add AutoAddMissingTranslations listener ? (y/n) : " reponse
+
+if [[ "$reponse" == "y" ]]; then
+    mkdir -p src/EventListener
+    mv init-config/AutoAddMissingTranslations.php src/EventListener/
+
+    echo "✅ AutoAddMissingTranslations listener added"
+else
+    rm init-config/AutoAddMissingTranslations.php
+fi
+
+# Configure Sentry
+cp init-config/sentry.yaml config/packages/sentry.yaml
+read -p "What is the sentry DSN? " sentry_dsn
+
+if [ -z "$sentry_dsn" ]; then
+    echo "❌ You must enter the sentry DSN."
+    exit 1
+fi
+
+add_or_replace_env_variable SENTRY_DSN sentry_dsn
+
+rm init-config/sentry.yaml
+
+echo "✅ Sentry configured"
+
+# Configure Translation (using loco)
+cp init-config/translation.yaml config/packages/translation.yaml
+read -p "What is the loco DSN? " loco_dsn
+
+if [ -z "$loco_dsn" ]; then
+    echo "❌ You must enter the loco DSN."
+    exit 1
+fi
+
+add_or_replace_env_variable LOCO_DSN loco_dsn
+
+rm init-config/translation.yaml
+
+echo "✅ Loco configured"
 
 # Restart project to update dbtest container
 make start
