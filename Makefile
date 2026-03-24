@@ -8,6 +8,7 @@ CONSOLE = $(EXEC) bin/console
 # Run once after composer create-project
 init:
 	chmod +x init.sh
+	chmod +x dbtest/update_dbtest.sh
 	./init.sh
 
 # Install project
@@ -43,7 +44,7 @@ console:
 
 # Run migrations
 prepare:
-	bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+	bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --all-or-nothing
 	# bin/console translation:pull loco --force
 	bin/console assets:install --symlink
 	bin/console cache:clear -q
@@ -59,13 +60,14 @@ wp-watch:
 
 # Run tests
 test:
+	$(EXEC) cp phpunit.xml.dist phpunit.xml
+	$(EXEC) cp phpstan.dist.neon phpstan.neon
 	$(CONSOLE) lint:twig templates
 	$(EXEC) ./vendor/bin/phpcs
 	$(EXEC) ./vendor/bin/phpstan analyse
-	$(EXEC) cp phpunit.xml.dist phpunit.xml
 	$(CONSOLE) doctrine:database:drop --if-exists --force --env=test
 	$(CONSOLE) doctrine:database:create --if-not-exists --env=test
-	$(CONSOLE) doctrine:migrations:migrate --no-interaction --allow-no-migration --env=test
+	$(CONSOLE) doctrine:migrations:migrate --no-interaction --allow-no-migration --all-or-nothing --env=test
 	$(CONSOLE) doctrine:schema:validate -v --env=test
 	#$(CONSOLE) credential:load --env=test
 	$(EXEC) bin/phpunit tests/ -v --coverage-clover phpunit-coverage.xml --log-junit phpunit-report.xml --coverage-cobertura=coverage-cobertura.xml

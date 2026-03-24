@@ -111,6 +111,9 @@ replace_dbtest_service
 
 check "Service dbtest updated in docker-compose.yml"
 
+# Configure PHPStan
+mv init-config/phpstan.dist.neon phpstan.dist.neon
+
 # Configure Monolog
 cp init-config/monolog.yaml config/packages/monolog.yaml
 sed -i "s|\[PROJECT\]|$project_uppercase|g" config/packages/monolog.yaml
@@ -128,20 +131,6 @@ sed -i "/^parameters:/a\    locales: ['fr']" config/services.yaml
 rm init-config/monolog.yaml
 
 echo "✅ Monolog configured"
-
-# Add AutoAddMissingTranslations listener
-read -p "Do you want to add AutoAddMissingTranslations listener ? (y/n) : " reponse
-
-if [[ "$reponse" == "y" ]]; then
-    mkdir -p src/EventListener
-    mv init-config/AutoAddMissingTranslations.php src/EventListener/
-
-    sed -i '/autoconfigure: true/ a\        bind:\n            $locoDsn: '\''%env(LOCO_DSN)%'\'' ' config/services.yaml
-
-    echo "✅ AutoAddMissingTranslations listener added"
-else
-    rm init-config/AutoAddMissingTranslations.php
-fi
 
 # Configure Sentry
 cp init-config/sentry.yaml config/packages/sentry.yaml
@@ -179,9 +168,25 @@ else
   echo "LOCO_DSN=loco://${loco_dsn}@default" >> .env
 fi
 
+sed -i 's/^\([[:space:]]*\)# *\(bin\/console translation:pull loco --force\)/\1\2/' Makefile
+
 rm init-config/translation.yaml
 
 echo "✅ Loco configured"
+
+# Add AutoAddMissingTranslations listener
+read -p "Do you want to add AutoAddMissingTranslations listener ? (y/n) : " reponse
+
+if [[ "$reponse" == "y" ]]; then
+    mkdir -p src/EventListener
+    mv init-config/AutoAddMissingTranslations.php src/EventListener/
+
+    sed -i '/autoconfigure: true/ a\        bind:\n            $locoDsn: '\''%env(LOCO_DSN)%'\'' ' config/services.yaml
+
+    echo "✅ AutoAddMissingTranslations listener added"
+else
+    rm init-config/AutoAddMissingTranslations.php
+fi
 
 # Restart project to update dbtest container
 make start
