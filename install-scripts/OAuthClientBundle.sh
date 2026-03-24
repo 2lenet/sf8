@@ -36,6 +36,9 @@ docker compose exec symfony composer require 2lenet/oauth-client-bundle
 
 echo "✅ OAuthClientBundle installed"
 
+# Create User Entity
+docker compose exec symfony bin/console make:user
+
 # Security config
 SECURITY_FILE="config/packages/security.yaml"
 yq e -i --indent=4 '
@@ -80,5 +83,15 @@ update_env_var "OAUTHAPI_USERNAME" "api_admin"
 update_env_var "OAUTHAPI_PASSWORD" "$password"
 
 echo "✅ .env file updated"
+
+# Create and execute migration
+read -p "Do you want to create and execute migration ? (y/n) : " reponse
+
+if [[ "$reponse" == "y" ]]; then
+    docker compose exec symfony bin/console make:migration
+    docker compose exec symfony bin/console doctrine:migrations:migrate
+
+    echo "✅ Migration generated and executed"
+fi
 
 echo "✅ OAuthClientBundle installed and configured"
