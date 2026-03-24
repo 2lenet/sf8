@@ -1,0 +1,1 @@
+* * * * * www-data cd /var/www/html/ && php bin/console lle:hermes:send

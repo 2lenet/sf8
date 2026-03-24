@@ -44,6 +44,29 @@ replace_dbtest_service() {
     mv "$output" "$input"
 }
 
+# yq is required to manage yaml file
+if ! command -v yq &> /dev/null; then
+    echo "The yq package is required for the script to run correctly."
+
+    read -p "Would you like to install it now? ? (y/n) " answer
+    if [[ "$answer" != "y" ]]; then
+        echo "yq is required for this script. Exit."
+        exit 1
+    fi
+
+    echo "Installation of yq..."
+    sudo apt update
+    sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+    sudo chmod +x /usr/bin/yq
+
+    if ! command -v yq &> /dev/null; then
+        echo "Error: yq could not be installed."
+        exit 1
+    fi
+
+    echo "yq has been successfully installed."
+fi
+
 # Replace [PROJECT] with the project name (current folder)
 sed -i "s|\[PROJECT\]|$project|g" docker-compose.yml
 sed -i "s|\[PROJECT\]|$project_capitalized|g" Dockerfile
@@ -93,8 +116,7 @@ docker compose exec symfony bin/console doctrine:migrations:migrate
 
 check "Migration executed"
 
-# Configure locales parameter
-sed -i "/^parameters:/a\    locales: ['fr']" config/services.yaml
+yq e -i '.parameters.locales = ["fr"]' config/services.yaml
 
 # Enable lle:credential:load command
 sed -i 's/^\([[:space:]]*\)# *\(bin\/console lle:credential:load\)/\1\2/' Makefile
@@ -111,10 +133,11 @@ docker compose exec dbtest mariadb-dump -uroot -ppass $project > dbtest/db.sql
 
 check "Database exported"
 
-rm dbtest/db.sql.gz
-gzip dbtest/db.sql
-chmod +x dbtest/build.sh
-cd dbtest; ./build.sh
+cd dbtest
+rm db.sql.gz
+gzip db.sql
+chmod +x build.sh
+./build.sh
 cd ..
 
 check "Dbtest builded"
@@ -192,7 +215,7 @@ if [[ "$reponse" == "y" ]]; then
     mkdir -p src/EventListener
     mv init-config/AutoAddMissingTranslations.php src/EventListener/
 
-    sed -i '/autoconfigure: true/ a\        bind:\n            $locoDsn: '\''%env(LOCO_DSN)%'\'' ' config/services.yaml
+    yq e -i '.services._defaults.bind."$locoDsn" = "%env(LOCO_DSN)%"' config/services.yaml
 
     echo "✅ AutoAddMissingTranslations listener added"
 else
