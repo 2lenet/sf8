@@ -93,6 +93,9 @@ docker compose exec symfony bin/console doctrine:migrations:migrate
 
 check "Migration executed"
 
+# Configure locales parameter
+sed -i "/^parameters:/a\    locales: ['fr']" config/services.yaml
+
 # Enable lle:credential:load command
 sed -i 's/^\([[:space:]]*\)# *\(bin\/console lle:credential:load\)/\1\2/' Makefile
 
@@ -135,8 +138,6 @@ else
   [ -s .env ] && [ -n "$(tail -c1 .env)" ] && echo >> .env
   echo "MAILER_DSN=${url}" >> .env
 fi
-
-sed -i "/^parameters:/a\    locales: ['fr']" config/services.yaml
 
 rm init-config/monolog.yaml
 
