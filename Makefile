@@ -48,7 +48,7 @@ prepare:
 	# bin/console translation:pull loco --force
 	bin/console assets:install --symlink
 	bin/console cache:clear -q
-	# bin/console credential:load
+	# bin/console lle:credential:load
 
 # Download translations from Loco
 translate:
@@ -69,6 +69,6 @@ test:
 	$(CONSOLE) doctrine:database:create --if-not-exists --env=test
 	$(CONSOLE) doctrine:migrations:migrate --no-interaction --allow-no-migration --all-or-nothing --env=test
 	$(CONSOLE) doctrine:schema:validate -v --env=test
-	#$(CONSOLE) credential:load --env=test
+	$(CONSOLE) lle:credential:warmup --env=test
 	$(EXEC) bin/phpunit tests/ -v --coverage-clover phpunit-coverage.xml --log-junit phpunit-report.xml --coverage-cobertura=coverage-cobertura.xml
 

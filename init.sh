@@ -93,6 +93,16 @@ docker compose exec symfony bin/console doctrine:migrations:migrate
 
 check "Migration executed"
 
+# Enable lle:credential:load command
+sed -i 's/^\([[:space:]]*\)# *\(bin\/console lle:credential:load\)/\1\2/' Makefile
+
+# Create CredentialWarmup
+mkdir -p src/Warmup
+mv init-config/CredentialWarmup.php src/Warmup/CredentialWarmup.php
+
+# Generate roles
+docker compose exec symfony bin/console lle:credential:warmup
+
 # Export current database to create new dbtest
 docker compose exec dbtest mariadb-dump -uroot -ppass $project > dbtest/db.sql
 
