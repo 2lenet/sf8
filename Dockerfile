@@ -10,6 +10,7 @@ ARG app_version=dev
 ENV APP_VERSION=$app_version
 
 RUN COMPOSER_MEMORY_LIMIT=-1 COMPOSER_ALLOW_SUPERUSER=1 composer install  --no-scripts
+RUN bin/console ckeditor:install --tag=4.6.0 --clear=drop
 RUN bin/console assets:install --symlink
 RUN npm install
 RUN npm run build

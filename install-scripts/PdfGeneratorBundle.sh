@@ -1,9 +1,20 @@
 #!/bin/bash
 
+CONFIG_DIRECTORY="init-config/OAuthClientBundle"
+
 # Install bundle
 docker compose exec symfony composer require 2lenet/pdf-generator-bundle
 
 echo "✅ PdfGeneratorBundle installed"
+
+# Create PdfModel CRUD
+mkdir -p src/Controller/Crudit src/Crudit/Config src/Crudit/Datasource src/Form/Crudit
+cp $CONFIG_DIRECTORY/PdfModelController.php src/Controller/Crudit/
+cp $CONFIG_DIRECTORY/PdfModelCrudConfig.php src/Crudit/Config/
+cp $CONFIG_DIRECTORY/PdfModelDatasource.php src/Crudit/Datasource/
+cp $CONFIG_DIRECTORY/PdfModelType.php src/Form/Crudit/
+
+echo "✅ CRUD files created"
 
 # Add unoserver to docker-compose.yml
 DOCKERCOMPOSE_FILE="docker-compose.yml"
@@ -38,6 +49,36 @@ yq e -i --indent=4 '
 ' "$ROUTES_FILE"
 
 echo "✅ routes.yaml file updated"
+
+# VichUploader config
+VICHUPLOADER_FILE="config/packages/vich_uploader.yaml"
+if [ ! -f "$VICHUPLOADER_FILE" ]; then
+    touch "$VICHUPLOADER_FILE"
+    echo "✅ File $VICHUPLOADER_FILE created."
+fi
+
+yq e -i --indent=4 '
+.vich_uploader = {
+    "db_driver": "orm",
+    "metadata": {
+        "type": "attribute"
+    },
+    "mappings": {
+        "pdf_model": {
+            "upload_destination": "%app.path.pdf_model%",
+            "namer": "Vich\UploaderBundle\Naming\UniqidNamer"
+        }
+    }
+}
+' "$PDFGENERATOR_FILE"
+
+echo "✅ lle_pdf_generator.yaml file created and configured"
+
+yq e -i --indent=4 '.parameters.app.path.pdf_model = ""' config/services.yaml
+
+echo "✅ services.yaml file updated"
+
+echo "⚠️ You must configure the value of pdf_model yourself in the services.yaml file"
 
 # Create and execute migration
 read -p "Do you want to create and execute migration ? (y/n) : " reponse

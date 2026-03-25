@@ -46,6 +46,7 @@ console:
 prepare:
 	bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --all-or-nothing
 	# bin/console translation:pull loco --force
+	bin/console ckeditor:install --tag=4.6.0 --clear=drop
 	bin/console assets:install --symlink
 	bin/console cache:clear -q
 	# bin/console lle:credential:load

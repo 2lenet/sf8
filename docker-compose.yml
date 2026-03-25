@@ -36,4 +36,4 @@ services:
     smtp:
         image: mailhog/mailhog
         ports:
-            - 10[IDENTIFIER]:8025
+            - "10[IDENTIFIER]:8025"

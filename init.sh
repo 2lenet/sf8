@@ -1,5 +1,7 @@
 #!/bin/bash
 
+CONFIG_DIRECTORY="init-config/init"
+
 project=$(basename "$(pwd)")
 project_capitalized="${project^}"
 project_uppercase="${project^^}"
@@ -55,7 +57,6 @@ if ! command -v yq &> /dev/null; then
     fi
 
     echo "Installation of yq..."
-    sudo apt update
     sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
     sudo chmod +x /usr/bin/yq
 
@@ -121,9 +122,16 @@ yq e -i '.parameters.locales = ["fr"]' config/services.yaml
 # Enable lle:credential:load command
 sed -i 's/^\([[:space:]]*\)# *\(bin\/console lle:credential:load\)/\1\2/' Makefile
 
+# Create Group CRUD
+mkdir -p src/Controller/Crudit src/Crudit/Config src/Crudit/Datasource src/Form/Crudit
+cp $CONFIG_DIRECTORY/GroupController.php src/Controller/Crudit/
+cp $CONFIG_DIRECTORY/GroupCrudConfig.php src/Crudit/Config/
+cp $CONFIG_DIRECTORY/GroupDatasource.php src/Crudit/Datasource/
+cp $CONFIG_DIRECTORY/GroupType.php src/Form/Crudit/
+
 # Create CredentialWarmup
 mkdir -p src/Warmup
-mv init-config/CredentialWarmup.php src/Warmup/CredentialWarmup.php
+mv $CONFIG_DIRECTORY/CredentialWarmup.php src/Warmup/CredentialWarmup.php
 
 # Generate roles
 docker compose exec symfony bin/console lle:credential:warmup
@@ -140,7 +148,7 @@ chmod +x build.sh
 ./build.sh
 cd ..
 
-check "Dbtest builded"
+check "Dbtest built"
 
 # Replace current dbtest service in docker-compose.yml
 replace_dbtest_service
@@ -148,10 +156,10 @@ replace_dbtest_service
 check "Service dbtest updated in docker-compose.yml"
 
 # Configure PHPStan
-mv init-config/phpstan.dist.neon phpstan.dist.neon
+mv $CONFIG_DIRECTORY/phpstan.dist.neon phpstan.dist.neon
 
 # Configure Monolog
-cp init-config/monolog.yaml config/packages/monolog.yaml
+mv $CONFIG_DIRECTORY/monolog.yaml config/packages/monolog.yaml
 sed -i "s|\[PROJECT\]|$project_uppercase|g" config/packages/monolog.yaml
 
 url=smtp://smtp:1025
@@ -162,12 +170,10 @@ else
   echo "MAILER_DSN=${url}" >> .env
 fi
 
-rm init-config/monolog.yaml
-
 echo "✅ Monolog configured"
 
 # Configure Sentry
-cp init-config/sentry.yaml config/packages/sentry.yaml
+mv $CONFIG_DIRECTORY/sentry.yaml config/packages/sentry.yaml
 read -p "What is the sentry DSN? " sentry_dsn
 
 if [ -z "$sentry_dsn" ]; then
@@ -182,12 +188,10 @@ else
   echo "SENTRY_DSN=${sentry_dsn}" >> .env
 fi
 
-rm init-config/sentry.yaml
-
 echo "✅ Sentry configured"
 
 # Configure Translation (using loco)
-cp init-config/translation.yaml config/packages/translation.yaml
+mv $CONFIG_DIRECTORY/translation.yaml config/packages/translation.yaml
 read -p "What is the loco DSN? " loco_dsn
 
 if [ -z "$loco_dsn" ]; then
@@ -204,8 +208,6 @@ fi
 
 sed -i 's/^\([[:space:]]*\)# *\(bin\/console translation:pull loco --force\)/\1\2/' Makefile
 
-rm init-config/translation.yaml
-
 echo "✅ Loco configured"
 
 # Add AutoAddMissingTranslations listener
@@ -213,13 +215,13 @@ read -p "Do you want to add AutoAddMissingTranslations listener ? (y/n) : " repo
 
 if [[ "$reponse" == "y" ]]; then
     mkdir -p src/EventListener
-    mv init-config/AutoAddMissingTranslations.php src/EventListener/
+    mv $CONFIG_DIRECTORY/AutoAddMissingTranslations.php src/EventListener/
 
     yq e -i '.services._defaults.bind."$locoDsn" = "%env(LOCO_DSN)%"' config/services.yaml
 
     echo "✅ AutoAddMissingTranslations listener added"
 else
-    rm init-config/AutoAddMissingTranslations.php
+    rm $CONFIG_DIRECTORY/AutoAddMissingTranslations.php
 fi
 
 # Restart project to update dbtest container

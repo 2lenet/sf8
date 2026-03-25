@@ -7,12 +7,12 @@ docker compose exec symfony composer require 2lenet/config-bundle
 
 echo "✅ ConfigBundle installed"
 
-# Create Entity and Repository files
+# Create Config Entity and Repository files
 mkdir -p src/Entity src/Repository
 mv $CONFIG_DIRECTORY/Config.php src/Entity/
 mv $CONFIG_DIRECTORY/ConfigRepository.php src/Repository/
 
-echo "✅ Entity and Repository created"
+echo "✅ Config Entity and Repository files created"
 
 # Doctrine config
 DOCTRINE_FILE="config/packages/doctrine.yaml"

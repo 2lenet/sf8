@@ -1,0 +1,16 @@
+{% set canImpersonate = false %}
+{% if not resource.profil.requiredRole %}
+    {% set canImpersonate = true %}
+{% else %}
+    {% for requiredRole in resource.profil.requiredRole|json_decode %}
+        {% if is_granted(requiredRole) %}
+            {% set canImpersonate = true %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if is_granted('ROLE_ALLOWED_TO_SWITCH') and canImpersonate and app.user.username != resource.username %}
+    <a href="{{ path('home') }}?_switch_user={{ resource.username|url_encode }}" class="btn btn-sm btn-primary">
+        {{ 'action.impersonate'|trans }}
+    </a>
+{% endif %}
