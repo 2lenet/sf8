@@ -83,7 +83,7 @@ yq e -i --indent=4 '
 
 echo "✅ vich_uploader.yaml file updated"
 
-yq e -i --indent=4 '.parameters.app.path.pdf_model = ""' config/services.yaml
+yq e -i --indent=4 '.parameters."app.path.pdf_model" = ""' config/services.yaml
 
 echo "✅ services.yaml file updated"
 

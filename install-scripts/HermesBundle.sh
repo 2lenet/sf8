@@ -61,6 +61,17 @@ yq e -i --indent=4 '.parameters.default_locale = "fr"' config/services.yaml
 
 echo "✅ services.yaml file updated"
 
+# Route config
+ROUTES_FILE="config/routes.yaml"
+yq e -i --indent=4 '
+.lle_hermes = {
+    "resource": "@LleHermesBundle/Resources/config/routes.xml",
+    "prefix": "/hermes"
+}
+' "$ROUTES_FILE"
+
+echo "✅ routes.yaml file updated"
+
 # Create and execute migration
 read -p "Do you want to create and execute migration ? (y/n) : " reponse
 

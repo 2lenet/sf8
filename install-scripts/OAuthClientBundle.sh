@@ -128,8 +128,8 @@ ask_and_update_env_var "OAUTH_PUBLIC_URL" "Connect public URL"
 ask_and_update_env_var "OAUTH_API_URL" "Connect API URL"
 ask_and_update_env_var "OAUTH_CLIENT_ID" "Connect client ID"
 ask_and_update_env_var "OAUTH_CLIENT_SECRET" "Connect client secret"
-update_env_var "OAUTHAPI_USERNAME" "api_admin"
-update_env_var "OAUTHAPI_PASSWORD" "$password"
+update_env_var "OAUTH_API_USERNAME" "api_admin"
+update_env_var "OAUTH_API_PASSWORD" "$password"
 
 echo "✅ .env file updated"
 
