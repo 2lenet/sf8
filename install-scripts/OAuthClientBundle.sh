@@ -2,6 +2,15 @@
 
 CONFIG_DIRECTORY="init-config/OAuthClientBundle"
 
+check() {
+    if [ $? -eq 0 ]; then
+        echo "✅ $1"
+    else
+        echo "❌ An error has occurred"
+        exit 1
+    fi
+}
+
 ask_and_update_env_var() {
     local var_name=$1
     local prompt_message=$2
@@ -36,7 +45,7 @@ update_env_var() {
 # Install bundle
 docker compose exec symfony composer require 2lenet/oauth-client-bundle
 
-echo "✅ OAuthClientBundle installed"
+check "OAuthClientBundle installed"
 
 # Create User Entity and Repository files
 mdkir -p src/Entity src/Repository

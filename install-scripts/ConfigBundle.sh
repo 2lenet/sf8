@@ -2,10 +2,19 @@
 
 CONFIG_DIRECTORY="init-config/ConfigBundle"
 
+check() {
+    if [ $? -eq 0 ]; then
+        echo "✅ $1"
+    else
+        echo "❌ An error has occurred"
+        exit 1
+    fi
+}
+
 # Install bundle
 docker compose exec symfony composer require 2lenet/config-bundle
 
-echo "✅ ConfigBundle installed"
+check "ConfigBundle installed"
 
 # Create Config Entity and Repository files
 mkdir -p src/Entity src/Repository

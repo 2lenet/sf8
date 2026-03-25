@@ -1,5 +1,14 @@
 #!/bin/bash
 
+check() {
+    if [ $? -eq 0 ]; then
+        echo "✅ $1"
+    else
+        echo "❌ An error has occurred"
+        exit 1
+    fi
+}
+
 ask_and_update_env_var() {
     local var_name=$1
     local prompt_message=$2
@@ -24,7 +33,7 @@ CONFIG_DIRECTORY="init-config/HermesBundle"
 # Install bundle
 docker compose exec symfony composer require 2lenet/hermes-bundle
 
-echo "✅ HermesBundle installed"
+check "HermesBundle installed"
 
 # Compile assets
 docker compose exec symfony bin/console assets:install --symlink

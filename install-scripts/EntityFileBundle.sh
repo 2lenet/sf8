@@ -2,10 +2,19 @@
 
 CONFIG_DIRECTORY="init-config/EntityFileBundle"
 
+check() {
+    if [ $? -eq 0 ]; then
+        echo "✅ $1"
+    else
+        echo "❌ An error has occurred"
+        exit 1
+    fi
+}
+
 # Install bundle
 docker compose exec symfony composer require 2lenet/entity-file-bundle
 
-echo "✅ EntityFileBundle installed"
+check "EntityFileBundle installed"
 
 # Create config file
 mv $CONFIG_DIRECTORY/lle_entity_file.yaml config/packages/

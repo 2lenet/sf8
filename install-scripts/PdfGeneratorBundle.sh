@@ -1,11 +1,20 @@
 #!/bin/bash
 
+check() {
+    if [ $? -eq 0 ]; then
+        echo "✅ $1"
+    else
+        echo "❌ An error has occurred"
+        exit 1
+    fi
+}
+
 CONFIG_DIRECTORY="init-config/PdfGeneratorBundle"
 
 # Install bundle
 docker compose exec symfony composer require 2lenet/pdf-generator-bundle
 
-echo "✅ PdfGeneratorBundle installed"
+check "PdfGeneratorBundle installed"
 
 # Create PdfModel CRUD
 mkdir -p src/Controller/Crudit src/Crudit/Config src/Crudit/Datasource src/Form/Crudit
