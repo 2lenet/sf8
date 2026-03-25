@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Warmup;
+namespace App\Crudit\Config;
 
 use App\Crudit\Datasource\GroupDatasource;
 use Lle\CruditBundle\Contracts\CrudConfigInterface;

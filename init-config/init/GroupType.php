@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Warmup;
+namespace App\Form\Crudit;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;

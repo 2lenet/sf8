@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Warmup;
+namespace App\Crudit\Datasource;
 
 use Lle\CredentialBundle\Entity\Group;
 use Lle\CruditBundle\Datasource\AbstractDoctrineDatasource;

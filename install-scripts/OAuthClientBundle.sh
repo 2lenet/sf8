@@ -48,7 +48,7 @@ docker compose exec symfony composer require 2lenet/oauth-client-bundle
 check "OAuthClientBundle installed"
 
 # Create User Entity and Repository files
-mdkir -p src/Entity src/Repository
+mkdir -p src/Entity src/Repository
 mv $CONFIG_DIRECTORY/User.php src/Entity/
 mv $CONFIG_DIRECTORY/UserRepository.php src/Repository/
 
@@ -74,8 +74,8 @@ fi
 
 yq e -i --indent=4 '
 .lle_crudit = {
-    "add_connect_profile_link": "true",
-    "add_exit_impersonation_button": "true"
+    "add_connect_profile_link": true,
+    "add_exit_impersonation_button": true
 }
 ' "$CRUDIT_FILE"
 
@@ -100,7 +100,7 @@ yq e -i --indent=4 '
         "path": "logout",
         "target": "logout_oauth"
     },
-    "switch_user": "true",
+    "switch_user": true,
     "custom_authenticators": ["App\\Security\\OAuthAuthenticator"]
 } |
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Warmup;
+namespace App\Controller\Crudit;
 
 use App\Crudit\Config\GroupCrudConfig;
 use Lle\CruditBundle\Controller\AbstractCrudController;

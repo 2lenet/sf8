@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Crudit\Datasource;
 
 use App\Crudit\Datasource\Filterset\UserFilterSet;
 use App\Entity\User;

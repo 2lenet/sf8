@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Form\Crudit;
 
 use Lle\CredentialBundle\Entity\Group;
 use Symfony\Component\Form\AbstractType;

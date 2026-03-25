@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+namespace App\Crudit\Datasource;
 
 use Lle\CruditBundle\Datasource\AbstractDoctrineDatasource;
 use Lle\PdfGeneratorBundle\Entity\PdfModel;

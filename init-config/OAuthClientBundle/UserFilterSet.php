@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Crudit\Datasource\Filterset;
 
 use Lle\CredentialBundle\Entity\Group;
 use Lle\CruditBundle\Datasource\AbstractFilterSet;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Controller\Crudit;
 
 use App\Crudit\Config\UserCrudConfig;
 use Lle\CruditBundle\Controller\AbstractCrudController;

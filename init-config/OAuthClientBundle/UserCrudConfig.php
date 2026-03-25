@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Crudit\Config;
 
 use App\Crudit\Datasource\UserDatasource;
 use Lle\CruditBundle\Contracts\CrudConfigInterface;

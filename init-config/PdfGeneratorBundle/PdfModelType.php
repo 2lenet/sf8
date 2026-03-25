@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+namespace App\Form\Crudit;
 
 use Lle\CruditBundle\Form\Type\FileType;
 use Symfony\Component\Form\AbstractType;

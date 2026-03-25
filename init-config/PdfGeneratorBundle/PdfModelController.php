@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+namespace App\Controller\Crudit;
 
 use App\Crudit\Config\PdfModelCrudConfig;
 use Lle\CruditBundle\Controller\AbstractCrudController;

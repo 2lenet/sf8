@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+namespace App\Crudit\Config;
 
 use App\Crudit\Datasource\PdfModelDatasource;
 use Lle\CruditBundle\Contracts\CrudConfigInterface;
