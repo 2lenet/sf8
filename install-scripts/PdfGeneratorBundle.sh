@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONFIG_DIRECTORY="init-config/OAuthClientBundle"
+CONFIG_DIRECTORY="init-config/PdfGeneratorBundle"
 
 # Install bundle
 docker compose exec symfony composer require 2lenet/pdf-generator-bundle
@@ -31,7 +31,7 @@ fi
 
 yq e -i --indent=4 '
 .lle_pdf_generator = {
-    "path": "data/pdfmodel"
+    "path": "data/pdfmodel",
     "default_generator": "word_to_pdf",
     "class": "Lle\PdfGeneratorBundle\Entity\PdfModel"
 }
@@ -43,7 +43,7 @@ echo "✅ lle_pdf_generator.yaml file created and configured"
 ROUTES_FILE="config/routes.yaml"
 yq e -i --indent=4 '
 .lle_pdf_generator = {
-    "resource": "@LlePdfGeneratorBundle/Resources/config/routes.yaml"
+    "resource": "@LlePdfGeneratorBundle/Resources/config/routes.yaml",
     "prefix": "/"
 }
 ' "$ROUTES_FILE"
@@ -70,9 +70,9 @@ yq e -i --indent=4 '
         }
     }
 }
-' "$PDFGENERATOR_FILE"
+' "$VICHUPLOADER_FILE"
 
-echo "✅ lle_pdf_generator.yaml file created and configured"
+echo "✅ vich_uploader.yaml file updated"
 
 yq e -i --indent=4 '.parameters.app.path.pdf_model = ""' config/services.yaml
 

@@ -32,6 +32,13 @@ yq e -i --indent=4 '
     "client_public_url": "%env(CRUDIT_STUDIO_PUBLIC_URL)%",
     "project_code": "%env(CRUDIT_STUDIO_PROJECT_CODE)%",
     "project_token": "%env(CRUDIT_STUDIO_PROJECT_TOKEN)%"
+} |
+
+."when@test".lle_credential = {
+    "client_url": null,
+    "client_public_url": null,
+    "project_code": null,
+    "project_token": null
 }
 ' "$CREDENTIAL_FILE"
 
