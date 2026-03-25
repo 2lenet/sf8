@@ -33,7 +33,7 @@ when@prod:
             symfony_mailer:
                 type: symfony_mailer
                 from_email: 'no-reply@2le.fr'
-                to_emails: 'projet@2le.fr'
+                to_email: 'projet@2le.fr'
                 subject: "[PROJECT] An error occurred on production!"
                 formatter: monolog.formatter.html
                 content_type: text/html

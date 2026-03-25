@@ -53,6 +53,9 @@ class OAuthAuthenticator extends AbstractAuthenticator
                     ]);
                 }
 
+                /** @var list<string> $roles */
+                $roles = $resourceOwner->getRoles();
+
                 $user
                     ->setUsername($resourceOwner->getUsername())
                     ->setEmail($resourceOwner->getEmail())
@@ -61,7 +64,7 @@ class OAuthAuthenticator extends AbstractAuthenticator
                     ->setActif(true)
                     ->setConnectId($resourceOwner->getId())
                     ->setProfil($profil)
-                    ->setRoles($resourceOwner->getRoles());
+                    ->setRoles($roles);
 
                 $this->em->persist($user);
                 $this->em->flush();

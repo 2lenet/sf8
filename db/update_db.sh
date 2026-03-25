@@ -1,10 +1,5 @@
 #!/bin/bash
 
-db_name=$(grep '^DATABASE_URL=' ../.env \
-  | cut -d '=' -f2- \
-  | tr -d '"' \
-  | sed -E 's|^.*/([^/?]+).*|\1|')
-
 check() {
     if [ $? -eq 0 ]; then
         echo "✅ $1"
@@ -14,7 +9,7 @@ check() {
     fi
 }
 
-docker compose exec dbtest mariadb-dump -uroot -ppass $db_name > db.sql
+docker compose exec db mariadb-dump -uroot -ppass [PROJECT] > db.sql
 
 check "Database exported"
 
@@ -23,4 +18,4 @@ gzip db.sql
 chmod +x build.sh
 ./build.sh
 
-check "Dbtest builded"
+check "Db built"

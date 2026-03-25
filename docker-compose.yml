@@ -15,22 +15,22 @@ services:
         environment:
             - "COMPOSER_MEMORY_LIMIT=-1"
         depends_on:
+            - db
             - dbtest
         volumes:
             - ./:/app/
-            - ./docker/php/php.dev.ini:/usr/local/etc/php/conf.d/zz-dev.ini
 
     pma:
         image: phpmyadmin/phpmyadmin
         links:
-            - dbtest:db
+            - db:db
         ports:
             - "9[IDENTIFIER]:80"
         environment:
             UPLOAD_LIMIT: 3000000000
-            PMA_HOST: dbtest
+            PMA_HOST: db
         depends_on:
-            - dbtest
+            - db
         volumes:
             - ./docker/php/php.ini:/usr/local/etc/php/conf.d/php-phpmyadmin.ini
 

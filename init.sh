@@ -75,7 +75,11 @@ sed -i "s|\[PROJECT\]|$project|g" Makefile
 sed -i "s|\[PROJECT\]|$project|g" sonar-project.properties
 sed -i "s|\[PROJECT\]|$project|g" .env
 sed -i "s|\[PROJECT\]|$project|g" .gitlab-ci.yml
+sed -i "s|\[PROJECT\]|$project|g" db/build.sh
+sed -i "s|\[PROJECT\]|$project|g" db/Dockerfile
+sed -i "s|\[PROJECT\]|$project|g" db/update_db.sh
 sed -i "s|\[PROJECT\]|$project|g" dbtest/build.sh
+sed -i "s|\[PROJECT\]|$project|g" dbtest/create_empty_dbtest.sh
 sed -i "s|\[PROJECT\]|$project|g" dbtest/Dockerfile
 
 echo "✅ [PROJECT] replaced by $project"

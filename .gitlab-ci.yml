@@ -19,6 +19,8 @@ unittest:
     image: registry.2le.net/2le/2le:base-sf8-xdebug
     stage: test
     services:
+        - name: registry.2le.net/2le/[PROJECT]:db
+          alias: db
         - name: registry.2le.net/2le/[PROJECT]:dbtest
           alias: dbtest
     script:

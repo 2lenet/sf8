@@ -66,10 +66,8 @@ test:
 	$(CONSOLE) lint:twig templates
 	$(EXEC) ./vendor/bin/phpcs
 	$(EXEC) ./vendor/bin/phpstan analyse
-	$(CONSOLE) doctrine:database:drop --if-exists --force --env=test
-	$(CONSOLE) doctrine:database:create --if-not-exists --env=test
 	$(CONSOLE) doctrine:migrations:migrate --no-interaction --allow-no-migration --all-or-nothing --env=test
 	$(CONSOLE) doctrine:schema:validate -v --env=test
 	$(CONSOLE) lle:credential:warmup --env=test
-	$(EXEC) bin/phpunit tests/ -v --coverage-clover phpunit-coverage.xml --log-junit phpunit-report.xml --coverage-cobertura=coverage-cobertura.xml
+	$(EXEC) bin/phpunit tests/ --coverage-clover phpunit-coverage.xml --log-junit phpunit-report.xml --coverage-cobertura=coverage-cobertura.xml --coverage-filter=src
 
