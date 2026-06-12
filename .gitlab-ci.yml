@@ -15,18 +15,82 @@ include:
       ref: master # Git branch
       file: '/gitlab-ci/symfony-check.yml'
 
+build-npm:
+    image: registry.2le.net/2le/2le:base-sf8-xdebug
+    stage: test
+    cache:
+        - key:
+              prefix: build-npm
+              files:
+                  - composer.lock
+          paths:
+              - vendor/
+        - key:
+              files:
+                  - package-lock.json
+          paths:
+              - .npm/
+        - key:
+              files:
+                  - composer.lock
+                  - package-lock.json
+          paths:
+              - public/build/crudit/
+    script:
+        - composer install --no-dev --no-scripts
+        - npm ci --cache .npm --prefer-offline
+        - npm run build
+    artifacts:
+        paths:
+            - public/build/
+        expire_in: 1 week
+    rules:
+        - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "devops"
+          changes:
+              - "assets/**/*"
+              - "package-lock.json"
+              - "composer.lock"
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+          changes:
+              - "assets/**/*"
+              - "package-lock.json"
+              - "composer.lock"
+
 unittest:
     image: registry.2le.net/2le/2le:base-sf8-xdebug
     stage: test
+    needs:
+        - job: build-npm
+          optional: true
+          artifacts: true
     services:
         - name: registry.2le.net/2le/[PROJECT]:db
           alias: db
         - name: registry.2le.net/2le/[PROJECT]:dbtest
           alias: dbtest
+    cache:
+        - key:
+              files:
+                  - composer.lock
+          paths:
+              - vendor/
+        - key:
+              files:
+                  - package-lock.json
+          paths:
+              - .npm/
+        - key:
+              files:
+                  - composer.lock
+                  - package-lock.json
+          paths:
+              - public/build/crudit/
     script:
         - composer install
-        - npm install
-        - npm run build
+        - |
+            if [ ! -f "public/build/crudit/entrypoints.json" ]; then
+              npm ci --cache .npm --prefer-offline && npm run build
+            fi
         - make test
     artifacts:
         reports:
@@ -66,11 +130,21 @@ hal:
         - curl --location --request POST "https://hal.2le-test.me/api/upload/phpstan/[PROJECT]" --data-binary @phpstan.neon
 
 build-main:
-    stage: build
     image: registry.2le.net/2le/2le:base-build
+    stage: build
+    needs:
+        - job: symfony-check
+        - job: unittest
     script:
         - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-        - make build
+        - docker pull $CI_REGISTRY_IMAGE:latest || true
+        - >-
+            docker build
+            --cache-from $CI_REGISTRY_IMAGE:latest
+            --build-arg BUILDKIT_INLINE_CACHE=1
+            --build-arg app_version=dev-$CI_PIPELINE_ID
+            -t $CI_REGISTRY_IMAGE:latest .
+        - docker push $CI_REGISTRY_IMAGE:latest
     only:
         - main
 

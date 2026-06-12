@@ -2,9 +2,10 @@ when@dev:
     monolog:
         handlers:
             main:
-                type: stream
+                type: rotating_file
                 path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: debug
+                max_files: 10
                 channels: ["!event"]
             console:
                 type: console
@@ -17,23 +18,9 @@ when@prod:
             main:
                 type: fingers_crossed
                 action_level: critical
-                handler: grouped
+                handler: streamed
             streamed:
                 type: rotating_file
                 path: '%kernel.logs_dir%/%kernel.environment%.log'
                 level: info
                 max_files: 10
-            deduplicated:
-                type: deduplication
-                time: 60
-                handler: symfony_mailer
-            grouped:
-                type: group
-                members: [streamed, deduplicated]
-            symfony_mailer:
-                type: symfony_mailer
-                from_email: 'no-reply@2le.fr'
-                to_email: 'projet@2le.fr'
-                subject: "[PROJECT] An error occurred on production!"
-                formatter: monolog.formatter.html
-                content_type: text/html

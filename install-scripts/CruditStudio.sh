@@ -1,8 +1,17 @@
 #!/bin/bash
 
+set -e
+set -o pipefail
+trap 'echo "❌ An error occurred at line $LINENO. Aborting."' ERR
+
 ask_and_update_env_var() {
     local var_name=$1
     local prompt_message=$2
+
+    if grep -Eq "^$var_name=.+" .env 2>/dev/null; then
+        echo "⏭️ $var_name already set, skipping"
+        return 0
+    fi
 
     read -p "What is the $prompt_message? " value
 
@@ -11,10 +20,12 @@ ask_and_update_env_var() {
         exit 1
     fi
 
-    if grep -Eq "^[#[:space:]]*$var_name=" .env; then
+    if grep -Eq "^[#[:space:]]*$var_name=" .env 2>/dev/null; then
         sed -i "s|^[#[:space:]]*$var_name=.*|$var_name=$value|" .env
     else
-        [ -s .env ] && [ -n "$(tail -c1 .env)" ] && echo >> .env
+        if [ -s .env ] && [ -n "$(tail -c1 .env)" ]; then
+            echo >> .env
+        fi
         echo "$var_name=$value" >> .env
     fi
 }
@@ -26,7 +37,8 @@ if [ ! -f "$CREDENTIAL_FILE" ]; then
     echo "✅ File $CREDENTIAL_FILE created."
 fi
 
-yq e -i --indent=4 '
+if [ "$(yq e '.lle_credential' "$CREDENTIAL_FILE")" = "null" ]; then
+    yq e -i --indent=4 '
 .lle_credential = {
     "client_url": "%env(CRUDIT_STUDIO_URL)%",
     "client_public_url": "%env(CRUDIT_STUDIO_PUBLIC_URL)%",
@@ -41,8 +53,10 @@ yq e -i --indent=4 '
     "project_token": null
 }
 ' "$CREDENTIAL_FILE"
-
-echo "✅ lle_credential.yaml file updated"
+    echo "✅ lle_credential.yaml file updated"
+else
+    echo "⏭️ lle_credential.yaml already configured, skipping"
+fi
 
 # Configure env variable
 ask_and_update_env_var "CRUDIT_STUDIO_URL" "Crudit Studio URL"
@@ -51,5 +65,4 @@ ask_and_update_env_var "CRUDIT_STUDIO_PROJECT_CODE" "Crudit Studio project code"
 ask_and_update_env_var "CRUDIT_STUDIO_PROJECT_TOKEN" "Crudit Studio project token"
 
 echo "✅ .env file updated"
-
 echo "✅ Crudit Studio configured"

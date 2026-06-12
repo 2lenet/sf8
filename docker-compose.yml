@@ -19,6 +19,7 @@ services:
             - dbtest
         volumes:
             - ./:/app/
+            - ./docker/php/php.dev.ini:/usr/local/etc/php/conf.d/zz-dev.ini
 
     pma:
         image: phpmyadmin/phpmyadmin
