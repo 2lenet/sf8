@@ -4,7 +4,6 @@
 .dockerignore
 vendor/
 node_modules/
-assets/dessin/node_modules/
 var/cache/
 var/log/
 var/sessions/

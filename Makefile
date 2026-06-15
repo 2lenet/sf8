@@ -68,6 +68,22 @@ test:
 	$(EXEC) ./vendor/bin/phpstan analyse
 	$(CONSOLE) doctrine:migrations:migrate --no-interaction --allow-no-migration --all-or-nothing --env=test
 	$(CONSOLE) doctrine:schema:validate -v --env=test
+	$(CONSOLE) hautelook:fixtures:load --purge-with-truncate --no-interaction --env=test
 	$(CONSOLE) lle:credential:warmup --env=test
-	$(EXEC) bin/phpunit tests/ --coverage-clover phpunit-coverage.xml --log-junit phpunit-report.xml --coverage-cobertura=coverage-cobertura.xml --coverage-filter=src
+	$(EXEC) sh -c '\
+		if [ "$$CI" = "true" ]; then \
+			php -d xdebug.mode=coverage vendor/bin/paratest tests/ \
+				--processes=$(shell nproc) \
+				--passthru-php="-d xdebug.mode=coverage" \
+				--coverage-clover phpunit-coverage.xml \
+				--log-junit phpunit-report.xml \
+				--coverage-cobertura coverage-cobertura.xml \
+				--coverage-filter src \
+				-v; \
+		else \
+			vendor/bin/paratest tests/ \
+				--processes=$(shell nproc) \
+				--no-coverage \
+				-v; \
+		fi'
 
