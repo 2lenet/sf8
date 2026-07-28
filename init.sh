@@ -15,27 +15,28 @@ check() {
     fi
 }
 
-replace_dbtest_service() {
+replace_service_image() {
+    local service_name="$1"
     input="docker-compose.yml"
     output="docker-compose.tmp"
 
-    in_dbtest=0
-    dbtest_indent=""
+    in_service=0
+    service_indent=""
 
     while IFS= read -r line; do
-        if [[ "$line" =~ ^([[:space:]]*)dbtest: ]]; then
-            dbtest_indent="${BASH_REMATCH[1]}"
-            echo "${dbtest_indent}dbtest:" >> "$output"
-            echo "${dbtest_indent}    image: registry.2le.net/2le/$project:dbtest" >> "$output"
-            in_dbtest=1
+        if [[ "$line" =~ ^([[:space:]]*)${service_name}: ]]; then
+            service_indent="${BASH_REMATCH[1]}"
+            echo "${service_indent}${service_name}:" >> "$output"
+            echo "${service_indent}    image: registry.2le.net/2le/$project:${service_name}" >> "$output"
+            in_service=1
             continue
         fi
 
-        if [ $in_dbtest -eq 1 ]; then
-            if [[ "$line" =~ ^[[:space:]]+$ ]] || [[ "$line" =~ ^${dbtest_indent}[[:space:]]+ ]]; then
+        if [ $in_service -eq 1 ]; then
+            if [[ "$line" =~ ^[[:space:]]+$ ]] || [[ "$line" =~ ^${service_indent}[[:space:]]+ ]]; then
                 continue
             else
-                in_dbtest=0
+                in_service=0
             fi
         fi
 
@@ -74,6 +75,7 @@ sed -i "s|\[PROJECT\]|$project_capitalized|g" Dockerfile
 sed -i "s|\[PROJECT\]|$project|g" Makefile
 sed -i "s|\[PROJECT\]|$project|g" sonar-project.properties
 sed -i "s|\[PROJECT\]|$project|g" .env
+sed -i "s|\[PROJECT\]|$project|g" .env.test
 sed -i "s|\[PROJECT\]|$project|g" .gitlab-ci.yml
 sed -i "s|\[PROJECT\]|$project|g" db/build.sh
 sed -i "s|\[PROJECT\]|$project|g" db/Dockerfile
@@ -155,24 +157,25 @@ docker compose exec symfony bin/console lle:credential:init-project
 
 check "Project initialized on Crudit Studio"
 
-# Export current database to create new dbtest
-docker compose exec dbtest mariadb-dump -uroot -ppass $project > dbtest/db.sql
+# Build the db image from the freshly migrated schema (dev seed data)
+cd db
+./update_db.sh
+cd ..
 
-check "Database exported"
+check "Db built"
 
+# Build the dbtest image, always from an empty schema (migrations run fresh in tests)
 cd dbtest
-rm db.sql.gz
-gzip db.sql
-chmod +x build.sh
-./build.sh
+./create_empty_dbtest.sh
 cd ..
 
 check "Dbtest built"
 
-# Replace current dbtest service in docker-compose.yml
-replace_dbtest_service
+# Replace the db and dbtest services in docker-compose.yml with the freshly built images
+replace_service_image "db"
+replace_service_image "dbtest"
 
-check "Service dbtest updated in docker-compose.yml"
+check "Services db and dbtest updated in docker-compose.yml"
 
 # Configure PHPStan
 mv $CONFIG_DIRECTORY/phpstan.dist.neon phpstan.dist.neon

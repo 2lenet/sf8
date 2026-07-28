@@ -1,4 +1,10 @@
 services:
+    db:
+        image: mariadb:lts
+        environment:
+            MARIADB_ROOT_PASSWORD: pass
+            MARIADB_DATABASE: [PROJECT]
+
     dbtest:
         image: mariadb:lts
         environment:

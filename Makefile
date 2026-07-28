@@ -8,7 +8,8 @@ CONSOLE = $(EXEC) bin/console
 # Run once after composer create-project
 init:
 	chmod +x init.sh
-	chmod +x dbtest/update_dbtest.sh
+	chmod +x db/update_db.sh
+	chmod +x dbtest/create_empty_dbtest.sh
 	./init.sh
 
 # Install project
