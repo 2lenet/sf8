@@ -37,7 +37,8 @@ if [ ! -f "$CREDENTIAL_FILE" ]; then
     echo "✅ File $CREDENTIAL_FILE created."
 fi
 
-if [ "$(yq e '.lle_credential' "$CREDENTIAL_FILE")" = "null" ]; then
+CREDENTIAL_CLIENT_URL="$(yq e '.lle_credential.client_url' "$CREDENTIAL_FILE")"
+if [ -z "$CREDENTIAL_CLIENT_URL" ] || [ "$CREDENTIAL_CLIENT_URL" = "null" ]; then
     yq e -i --indent=4 '
 .lle_credential = {
     "client_url": "%env(CRUDIT_STUDIO_URL)%",
