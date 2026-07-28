@@ -14,7 +14,10 @@
         "vue-i18n": "^8.27.0"
     },
     "devDependencies": {
+        "@hotwired/stimulus": "^3.0.0",
+        "@symfony/ux-chartjs": "file:vendor/symfony/ux-chartjs/assets",
         "@symfony/webpack-encore": "^1.0.0",
+        "chart.js": "^3.4.1 || ^4.0",
         "class-transformer": "^0.4.0",
         "core-js": "^3.0.0",
         "es6-shim": "^0.35.6",
