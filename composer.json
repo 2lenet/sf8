@@ -13,7 +13,7 @@
         "2lenet/crudit-bundle": "^1.0",
         "2lenet/crudit-translation-provider": "^1.0",
         "2lenet/cruditplatform-bundle": "^2.0",
-        "2lenet/dashboard2-bundle": "^2.0",
+        "2lenet/dashboard2-bundle": "2.5.6",
         "doctrine/doctrine-bundle": "^3.0",
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^3.0",
