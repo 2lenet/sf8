@@ -134,6 +134,10 @@ check "Crudit Studio configured"
 # Configure Translation (provider set up by CruditStudio.sh above)
 mv $CONFIG_DIRECTORY/translation.yaml config/packages/translation.yaml
 
+# Only now is config/packages/translation.yaml in place: enable the pull in `make prepare`,
+# which entrypoint_dev.sh runs on every container start (it would fail on earlier boots)
+sed -i 's/^\([[:space:]]*\)# *\(bin\/console translation:pull crudit --force\)/\1\2/' Makefile
+
 echo "✅ Translation configured"
 
 # Create Group CRUD
@@ -156,6 +160,10 @@ check "Roles generated"
 docker compose exec symfony bin/console lle:credential:init-project
 
 check "Project initialized on Crudit Studio"
+
+# Only now has the project been bootstrapped on Crudit Studio: enable the pull in `make prepare`,
+# which entrypoint_dev.sh runs on every container start (it would fail on earlier boots)
+sed -i 's/^\([[:space:]]*\)# *\(bin\/console lle:credential:load\)/\1\2/' Makefile
 
 # Build the db image from the freshly migrated schema (dev seed data)
 cd db
