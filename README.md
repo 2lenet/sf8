@@ -29,7 +29,8 @@ This script will create your project and configure it:
 * Docker and Docker Compose config
 * CI with test, build and deploy
 * Create a dbtest image for your project and test
-* Monolog, Sentry and Translation (Loco) config
+* Monolog, Sentry and Translation (Crudit Studio) config
+* Rights management (Crudit Studio) config
 * PHPStan, PHPCS and SonarQube config
 
 When the script is finished, your project is ready to use.

@@ -30,7 +30,7 @@ ask_and_update_env_var() {
     fi
 }
 
-# Credential config
+# Credential config (rights matrix, managed via crudit-studio)
 CREDENTIAL_FILE="config/packages/lle_credential.yaml"
 if [ ! -f "$CREDENTIAL_FILE" ]; then
     touch "$CREDENTIAL_FILE"
@@ -65,4 +65,20 @@ ask_and_update_env_var "CRUDIT_STUDIO_PROJECT_CODE" "Crudit Studio project code"
 ask_and_update_env_var "CRUDIT_STUDIO_PROJECT_TOKEN" "Crudit Studio project token"
 
 echo "✅ .env file updated"
-echo "✅ Crudit Studio configured"
+
+# Translations are also centralized on crudit-studio (config/packages/translation.yaml):
+# derive the provider DSN from the same project code/token instead of asking again.
+if grep -Eq "^CRUDIT_TRANSLATION_DSN=.+" .env 2>/dev/null; then
+    echo "⏭️ CRUDIT_TRANSLATION_DSN already set, skipping"
+else
+    crudit_studio_host=$(grep -E "^CRUDIT_STUDIO_URL=" .env | cut -d= -f2- | sed -E 's#^[a-zA-Z]+://##')
+    dsn="crudit://\${CRUDIT_STUDIO_PROJECT_CODE}:\${CRUDIT_STUDIO_PROJECT_TOKEN}@${crudit_studio_host}"
+
+    if [ -s .env ] && [ -n "$(tail -c1 .env)" ]; then
+        echo >> .env
+    fi
+    echo "CRUDIT_TRANSLATION_DSN=\"$dsn\"" >> .env
+    echo "✅ CRUDIT_TRANSLATION_DSN derived from CRUDIT_STUDIO_* variables"
+fi
+
+echo "✅ Crudit Studio configured (rights + translations)"

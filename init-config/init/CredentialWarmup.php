@@ -31,6 +31,8 @@ class CredentialWarmup implements CredentialWarmupInterface
             'ROLE_CREDENTIAL_ACTION_TOGGLERUBRIQUE' => 'action.credential.toggle_rubrique',
             'ROLE_CREDENTIAL_ACTION_TOGGLECREDENTIAL' => 'action.credential.toggle_credential',
             'ROLE_CREDENTIAL_ACTION_ALLOWSTATUS' => 'action.credential.allow_status',
+            'ROLE_CREDENTIAL_ACTION_UPDATE' => 'action.credential.update',
+            'ROLE_CREDENTIAL_ACTION_REMOTEREPOSITORY' => 'action.credential.remote_repository',
         ];
         foreach ($roles as $role => $label) {
             echo "$role\n";

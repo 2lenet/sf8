@@ -45,15 +45,19 @@ console:
 # Run migrations
 prepare:
 	bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --all-or-nothing
-	# bin/console translation:pull loco --force
+	bin/console translation:pull crudit --force
+	bin/console lle:credential:load
 	bin/console ckeditor:install --tag=4.6.0 --clear=drop
 	bin/console assets:install --symlink
 	bin/console cache:clear -q
-	# bin/console lle:credential:load
 
-# Download translations from Loco
+# Download translations from Crudit Studio
 translate:
-	$(CONSOLE) translation:pull loco --force
+	$(CONSOLE) translation:pull crudit --force
+
+# Upload translations to Crudit Studio
+push-translate:
+	$(CONSOLE) translation:push crudit
 
 # Start watching asset files
 wp-watch:

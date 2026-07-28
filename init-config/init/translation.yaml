@@ -3,8 +3,8 @@ framework:
     translator:
         default_path: '%kernel.project_dir%/translations'
         providers:
-            loco:
-                dsn: '%env(LOCO_DSN)%'
+            crudit:
+                dsn: '%env(CRUDIT_TRANSLATION_DSN)%'
                 domains: ['messages', 'validators']
                 locales: '%locales%'
         fallbacks:

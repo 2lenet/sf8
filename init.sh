@@ -123,8 +123,16 @@ check "Migration executed"
 
 yq e -i '.parameters.locales = ["fr"]' config/services.yaml
 
-# Enable lle:credential:load command
-sed -i 's/^\([[:space:]]*\)# *\(bin\/console lle:credential:load\)/\1\2/' Makefile
+# Configure Crudit Studio (rights matrix + centralized translations, see
+# install-scripts/CruditStudio.sh — it can be re-run later from ./install.sh to rotate the token)
+bash install-scripts/CruditStudio.sh
+
+check "Crudit Studio configured"
+
+# Configure Translation (provider set up by CruditStudio.sh above)
+mv $CONFIG_DIRECTORY/translation.yaml config/packages/translation.yaml
+
+echo "✅ Translation configured"
 
 # Create Group CRUD
 mkdir -p src/Controller/Crudit src/Crudit/Config src/Crudit/Datasource src/Form/Crudit
@@ -139,6 +147,13 @@ mv $CONFIG_DIRECTORY/CredentialWarmup.php src/Warmup/CredentialWarmup.php
 
 # Generate roles
 docker compose exec symfony bin/console lle:credential:warmup
+
+check "Roles generated"
+
+# One-time bootstrap: push the warmed-up roles/groups to crudit-studio
+docker compose exec symfony bin/console lle:credential:init-project
+
+check "Project initialized on Crudit Studio"
 
 # Export current database to create new dbtest
 docker compose exec dbtest mariadb-dump -uroot -ppass $project > dbtest/db.sql
@@ -194,26 +209,6 @@ fi
 
 echo "✅ Sentry configured"
 
-# Configure Translation (using loco)
-mv $CONFIG_DIRECTORY/translation.yaml config/packages/translation.yaml
-read -p "What is the loco DSN? " loco_dsn
-
-if [ -z "$loco_dsn" ]; then
-    echo "❌ You must enter the loco DSN."
-    exit 1
-fi
-
-if grep -Eq "^[#[:space:]]*LOCO_DSN=" .env; then
-  sed -i "s|^[#[:space:]]*LOCO_DSN=.*|LOCO_DSN=loco://${loco_dsn}@default|" .env
-else
-  [ -s .env ] && [ -n "$(tail -c1 .env)" ] && echo >> .env
-  echo "LOCO_DSN=loco://${loco_dsn}@default" >> .env
-fi
-
-sed -i 's/^\([[:space:]]*\)# *\(bin\/console translation:pull loco --force\)/\1\2/' Makefile
-
-echo "✅ Loco configured"
-
 # Add AutoAddMissingTranslations listener
 read -p "Do you want to add AutoAddMissingTranslations listener ? (y/n) : " reponse
 
@@ -221,7 +216,7 @@ if [[ "$reponse" == "y" ]]; then
     mkdir -p src/EventListener
     mv $CONFIG_DIRECTORY/AutoAddMissingTranslations.php src/EventListener/
 
-    yq e -i '.services._defaults.bind."$locoDsn" = "%env(LOCO_DSN)%"' config/services.yaml
+    yq e -i '.services._defaults.bind."$cruditTranslationDsn" = "%env(CRUDIT_TRANSLATION_DSN)%"' config/services.yaml
 
     echo "✅ AutoAddMissingTranslations listener added"
 else

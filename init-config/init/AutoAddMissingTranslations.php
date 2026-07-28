@@ -13,83 +13,65 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 #[AsEventListener]
 final class AutoAddMissingTranslations
 {
+    private const API_PATH = '/api/project/translation/';
+
     private ?DataCollectorTranslator $dataCollector;
 
-    private const string HOST = 'localise.biz';
-
     public function __construct(
-        protected string $locoDsn,
+        protected string $cruditTranslationDsn,
         protected HttpClientInterface $client,
         protected ParameterBagInterface $parameterBag,
-        #[Autowire(service: 'translator.data_collector')] ?DataCollectorTranslator $translator = null,
+        #[Autowire(service: 'translator.data_collector')]
+        ?DataCollectorTranslator $translator = null,
     ) {
         $this->dataCollector = $translator;
     }
 
     public function __invoke(TerminateEvent $event): void
     {
-        if (!$this->support()) {
+        if (!$this->support() || null === $this->dataCollector) {
             return;
         }
 
-        if (null === $this->dataCollector) {
-            return;
-        }
-
-        $dsn = new Dsn($this->locoDsn);
-        $endpoint = 'default' === $dsn->getHost() ? self::HOST : $dsn->getHost();
-        $endpoint .= $dsn->getPort() ? ':' . $dsn->getPort() : '';
-
-        $this->client = $this->client->withOptions([
-            'base_uri' => 'https://' . $endpoint . '/api/',
-            'headers' => [
-                'Authorization' => 'Loco ' . $dsn->getUser(),
-            ],
-        ]);
-
-        $missingMessages = [];
-        $messages = $this->dataCollector->getCollectedMessages();
-        foreach ($messages as $message) {
+        $entries = [];
+        foreach ($this->dataCollector->getCollectedMessages() as $message) {
             if (DataCollectorTranslator::MESSAGE_MISSING === $message['state']) {
-                $locale = $message['locale'];
-                $domain = $message['domain'];
-                if (!array_key_exists($locale, $missingMessages)) {
-                    $missingMessages[$locale] = [];
-                }
-                if (!array_key_exists($domain, $missingMessages[$locale])) {
-                    $missingMessages[$locale][$domain] = [];
-                }
-                $missingMessages[$locale][$domain][] = $message['id'];
+                $entries[$message['locale'] . '|' . $message['domain'] . '|' . $message['id']] = [
+                    'key' => $message['id'],
+                    'locale' => $message['locale'],
+                    'domain' => $message['domain'],
+                    // No content: crudit-studio must register the key as untranslated, not as
+                    // translated to its own id.
+                    'content' => null,
+                ];
             }
         }
-        foreach ($missingMessages as $loc => $mess) {
-            foreach ($mess as $domain => $idlist) {
-                foreach ($idlist as $id) {
-                    $this->createAssets($id, (string)$domain);
-                }
-            }
+
+        if ($entries === []) {
+            return;
         }
+
+        $this->reportMissingKeys(array_values($entries));
     }
 
-    private function createAssets(string $id, string $domain): int
+    /**
+     * @param list<array{key: string, locale: string, domain: string, content: null}> $entries
+     */
+    private function reportMissingKeys(array $entries): void
     {
-        $response = $this->client->request('POST', 'assets', [
-            'body' => [
-                'id' => $id, // must be globally unique, not only per domain
-                'text' => $id,
-                'type' => 'text',
-                'default' => 'untranslated',
-            ],
-        ]);
-        $status = $response->getStatusCode();
-        if ($status == 201) {
-            $createdId = $response->toArray(false)['id'];
-            $response = $this->client->request('POST', sprintf('assets/%s/tags', rawurlencode($createdId)), [
-                'body' => ['name' => $domain],
-            ]);
-        }
+        $dsn = new Dsn($this->cruditTranslationDsn);
+        $projectCode = $dsn->getUser();
+        $scheme = $dsn->getOption('scheme', 'https');
+        $endpoint = $dsn->getHost() . ($dsn->getPort() ? ':' . $dsn->getPort() : '');
 
-        return $status;
+        $this->client->request(
+            'POST',
+            sprintf('%s://%s%spush/%s', $scheme, $endpoint, self::API_PATH, $projectCode),
+            [
+                'auth_bearer' => $dsn->getPassword(),
+                'json' => ['translations' => $entries],
+            ]
+        );
     }
 
     public function support(): bool
