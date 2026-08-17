@@ -1,5 +1,5 @@
 variables:
-    APP_IMAGE: registry.2le.net/2le/2le:base-sf7-xdebug
+    APP_IMAGE: registry.2le.net/2le/2le:base-sf8-xdebug
     DB_SERVICE: registry.2le.net/2le/[PROJECT]:db
     DBTEST_SERVICE: registry.2le.net/2le/[PROJECT]:dbtest
     DEPLOY_HOST: cluster.2le.net
